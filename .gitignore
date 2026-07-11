@@ -1,0 +1,5 @@
+# Root ignores (poster/ has its own .gitignore for its internals)
+node_modules/
+.env
+.env.local
+*.log

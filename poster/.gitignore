@@ -1,0 +1,9 @@
+node_modules/
+.env
+logs/
+queue/pending/*.json
+queue/approved/*.json
+queue/published/*.json
+queue/rejected/*.json
+data/history.json
+!queue/**/.gitkeep

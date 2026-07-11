@@ -1,0 +1,39 @@
+# Render Blueprint — deploys the Copium poster as a 24/7 background worker.
+# Docs: https://render.com/docs/blueprint-spec
+services:
+  - type: worker
+    name: copium-poster
+    runtime: node
+    plan: starter          # smallest always-on worker (~$7/mo; no free worker tier)
+    region: oregon         # change to ohio / virginia / frankfurt / singapore as you like
+    rootDir: poster        # the app lives in the poster/ subfolder of the repo
+    buildCommand: npm ci
+    startCommand: npm start
+    autoDeploy: true       # redeploy on every git push to the connected branch
+    envVars:
+      - key: COPIUM_DATA_DIR
+        value: /data
+      - key: COPIUM_TZ
+        value: America/New_York
+      - key: COPIUM_POST_CRON
+        value: "0 */2 * * *"   # every 2 hours = 12/day
+      # Secrets — sync:false means "set in the Render dashboard, not in git".
+      - key: DISCORD_BOT_TOKEN
+        sync: false
+      - key: DISCORD_CHANNEL_ID
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: X_API_KEY
+        sync: false
+      - key: X_API_SECRET
+        sync: false
+      - key: X_ACCESS_TOKEN
+        sync: false
+      - key: X_ACCESS_SECRET
+        sync: false
+    # Persistent disk for the queue + post history (survives restarts/redeploys).
+    disk:
+      name: copium-data
+      mountPath: /data
+      sizeGB: 1
