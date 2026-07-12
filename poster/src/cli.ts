@@ -5,6 +5,7 @@ import { publishToX } from './publish.js';
 import { recordPublished } from './history.js';
 import { runTick } from './tick.js';
 import { hasAnthropic, hasDiscord, hasX, config } from './config.js';
+import { containsUrl } from './urls.js';
 
 /** Minimal flag parser: --key value  and  --flag (boolean). */
 function parseArgs(argv: string[]): { positional: string[]; flags: Record<string, string | boolean> } {
@@ -90,6 +91,10 @@ async function cmdPublish(positional: string[], flags: Record<string, string | b
   }
 
   for (const draft of approved) {
+    if (containsUrl(draft.text)) {
+      console.log(`⚠ skipped ${draft.id} — contains a URL ($0.20 rate on X). Reject it or post manually.`);
+      continue;
+    }
     if (dry || !hasX()) {
       const why = dry ? '(--dry)' : '(no X credentials — dry run)';
       console.log(`~ Would publish ${draft.id} ${why}: ${draft.text}`);

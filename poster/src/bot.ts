@@ -18,6 +18,7 @@ import { recordPublished } from './history.js';
 import { generate } from './generate.js';
 import { runTick } from './tick.js';
 import { PENDING_DIR } from './paths.js';
+import { containsUrl } from './urls.js';
 
 // Brand palette (doc 02): cyan = awaiting, emerald = done, red = rejected, amber = error.
 const COLOR = { pending: 0x22e4ff, done: 0x2ee6a8, reject: 0xff4d6d, amber: 0xffb020 } as const;
@@ -159,6 +160,17 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
   try {
     if (action === 'approve') {
+      // URL guard: X bills a post with any link at $0.20 (vs $0.015). Refuse to
+      // publish it automatically; leave the card's buttons so the user can
+      // Regenerate or Reject.
+      if (containsUrl(draft.text)) {
+        await interaction.followUp({
+          content:
+            '⚠ Not posted — this draft contains a URL, which X bills at **$0.20** instead of $0.015 (13×). Regenerate or Reject it, or post it manually if you really want the link.',
+          flags: MessageFlags.Ephemeral,
+        });
+        return;
+      }
       move(id, 'approved');
       if (hasX()) {
         try {

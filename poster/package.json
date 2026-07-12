@@ -13,6 +13,7 @@
     "publish": "tsx src/cli.ts publish",
     "run": "tsx src/cli.ts run",
     "status": "tsx src/cli.ts status",
+    "check-token": "tsx src/check-token.ts",
     "bot": "tsx src/bot.ts"
   },
   "engines": {
