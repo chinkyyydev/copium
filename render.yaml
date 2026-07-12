@@ -17,6 +17,8 @@ services:
         value: America/New_York
       - key: COPIUM_POST_CRON
         value: "0 */2 * * *"   # every 2 hours = 12/day
+      - key: COPIUM_AUTO_POST
+        value: "true"          # publish without approval; cards get a Delete button. Set "false" for manual approval.
       # Secrets — sync:false means "set in the Render dashboard, not in git".
       - key: DISCORD_BOT_TOKEN
         sync: false

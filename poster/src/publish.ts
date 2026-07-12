@@ -17,3 +17,15 @@ export async function publishToX(text: string): Promise<string> {
   const { data } = await client.v2.tweet(text);
   return data.id;
 }
+
+/** Deletes a previously published post from X (used by the card's Delete button). */
+export async function deleteFromX(tweetId: string): Promise<void> {
+  if (!hasX()) throw new Error('X credentials missing.');
+  const client = new TwitterApi({
+    appKey: config.x.appKey,
+    appSecret: config.x.appSecret,
+    accessToken: config.x.accessToken,
+    accessSecret: config.x.accessSecret,
+  });
+  await client.v2.deleteTweet(tweetId);
+}

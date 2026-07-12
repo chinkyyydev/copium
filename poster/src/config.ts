@@ -19,6 +19,10 @@ export const config = {
   // disable and drive generation externally instead.
   autogen: (process.env.COPIUM_AUTOGEN ?? 'true') !== 'false',
   postCron: process.env.COPIUM_POST_CRON ?? '0 */2 * * *',
+  // Auto-post mode: publish scheduled posts straight to X without waiting for a
+  // Discord approval. Each post is still carded with the link + a Delete button.
+  // Set COPIUM_AUTO_POST=false to return to manual approval.
+  autoPost: (process.env.COPIUM_AUTO_POST ?? 'false') === 'true',
 } as const;
 
 export const hasAnthropic = () => Boolean(config.anthropicApiKey);

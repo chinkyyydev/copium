@@ -13,7 +13,7 @@ import {
 } from 'discord.js';
 import { config, hasDiscordBot, hasX } from './config.js';
 import { list, find, move, createDraft, type Draft } from './queue.js';
-import { publishToX } from './publish.js';
+import { publishToX, deleteFromX } from './publish.js';
 import { recordPublished } from './history.js';
 import { generate } from './generate.js';
 import { runTick } from './tick.js';
@@ -75,6 +75,44 @@ async function cardDraft(draft: Draft): Promise<void> {
   console.log(`carded ${draft.id}`);
 }
 
+/**
+ * Auto-post mode: publish a fresh draft straight to X, then card it as a
+ * notification with the tweet link and a Delete button. Falls back to the
+ * normal approval card if the draft contains a URL ($0.20 rate) or the
+ * publish fails.
+ */
+async function autoPublish(draft: Draft): Promise<void> {
+  if (containsUrl(draft.text)) {
+    console.warn(`auto-post: ${draft.id} contains a URL — held for manual approval.`);
+    carded.delete(draft.id); // let the normal approval card flow handle it
+    await cardDraft(draft);
+    return;
+  }
+  try {
+    const tweetId = await publishToX(draft.text);
+    move(draft.id, 'published', { tweetId });
+    recordPublished({
+      text: draft.text,
+      category: draft.category,
+      publishedAt: new Date().toISOString(),
+      tweetId,
+    });
+    const deleteRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder().setCustomId(`delete:${draft.id}`).setLabel('Delete from X').setEmoji('🗑️').setStyle(ButtonStyle.Danger),
+    );
+    await channel.send({
+      embeds: [embedFor(draft, 'done', `🚀 auto-posted → x.com/i/status/${tweetId}`)],
+      components: [deleteRow],
+    });
+    console.log(`auto-posted ${draft.id} → ${tweetId}`);
+  } catch (err) {
+    console.error(`auto-post failed for ${draft.id}: ${(err as Error).message}`);
+    carded.delete(draft.id);
+    await cardDraft(draft); // fall back to manual approval
+    await channel.send(`⚠ auto-post failed (${(err as Error).message}) — draft ${draft.id} queued for manual approval above.`);
+  }
+}
+
 /** Post review cards for any pending drafts not yet carded. */
 async function scanAndCard(): Promise<void> {
   let pending: Draft[];
@@ -134,10 +172,19 @@ client.once(Events.ClientReady, async (c) => {
     } else {
       cron.schedule(
         config.postCron,
-        () => void runTick().catch((e) => console.error('tick failed:', (e as Error).message)),
+        () =>
+          void (async () => {
+            const draft = await runTick();
+            if (config.autoPost && hasX()) {
+              carded.add(draft.id); // claim it before the watcher cards it for approval
+              await autoPublish(draft);
+            }
+            // else: the pending-dir watcher cards it for manual approval as usual
+          })().catch((e) => console.error('tick failed:', (e as Error).message)),
         { timezone: config.timezone },
       );
-      console.log(`Auto-generation ON — cron "${config.postCron}" (${config.timezone}).`);
+      const mode = config.autoPost ? 'AUTO-POST (no approval — cards carry a Delete button)' : 'manual approval';
+      console.log(`Auto-generation ON — cron "${config.postCron}" (${config.timezone}), mode: ${mode}.`);
     }
   } else {
     console.log('Auto-generation OFF (COPIUM_AUTOGEN=false). Drive generation externally.');
@@ -196,6 +243,24 @@ client.on(Events.InteractionCreate, async (interaction) => {
         await interaction.editReply({
           embeds: [embedFor(draft, 'done', `✅ approved by ${who} (no X creds — not posted)`)],
           components: [],
+        });
+      }
+    } else if (action === 'delete') {
+      if (!draft.tweetId) {
+        await interaction.followUp({ content: 'no tweet id on record for this draft.', flags: MessageFlags.Ephemeral });
+        return;
+      }
+      try {
+        await deleteFromX(draft.tweetId);
+        move(id, 'rejected', { tweetId: undefined });
+        await interaction.editReply({
+          embeds: [embedFor(draft, 'reject', `🗑️ deleted from X by ${who}`)],
+          components: [],
+        });
+      } catch (err) {
+        await interaction.followUp({
+          content: `couldn't delete: ${(err as Error).message}`,
+          flags: MessageFlags.Ephemeral,
         });
       }
     } else if (action === 'reject') {
