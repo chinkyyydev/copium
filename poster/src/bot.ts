@@ -19,6 +19,7 @@ import { generate } from './generate.js';
 import { runTick } from './tick.js';
 import { PENDING_DIR } from './paths.js';
 import { containsUrl } from './urls.js';
+import { violatesTokenPolicy } from './contentGuard.js';
 
 // Brand palette (doc 02): cyan = awaiting, emerald = done, red = rejected, amber = error.
 const COLOR = { pending: 0x22e4ff, done: 0x2ee6a8, reject: 0xff4d6d, amber: 0xffb020 } as const;
@@ -86,6 +87,17 @@ async function autoPublish(draft: Draft): Promise<void> {
     console.warn(`auto-post: ${draft.id} contains a URL — held for manual approval.`);
     carded.delete(draft.id); // let the normal approval card flow handle it
     await cardDraft(draft);
+    return;
+  }
+  const violation = violatesTokenPolicy(draft.text);
+  if (violation) {
+    // Token policy is absolute: never auto-post it, and don't even offer an
+    // approve button — reject outright and note why.
+    console.warn(`auto-post: ${draft.id} blocked — ${violation}.`);
+    move(draft.id, 'rejected');
+    await channel.send(
+      `🚫 blocked a draft (**${violation}**) — she never names or shills tokens. it was auto-rejected:\n> ${draft.text.replace(/\n/g, '\n> ')}`,
+    );
     return;
   }
   try {
@@ -214,6 +226,14 @@ client.on(Events.InteractionCreate, async (interaction) => {
         await interaction.followUp({
           content:
             '⚠ Not posted — this draft contains a URL, which X bills at **$0.20** instead of $0.015 (13×). Regenerate or Reject it, or post it manually if you really want the link.',
+          flags: MessageFlags.Ephemeral,
+        });
+        return;
+      }
+      const approveViolation = violatesTokenPolicy(draft.text);
+      if (approveViolation) {
+        await interaction.followUp({
+          content: `🚫 Not posted — **${approveViolation}**. Token policy is absolute: she never names or shills tokens. Regenerate or Reject.`,
           flags: MessageFlags.Ephemeral,
         });
         return;

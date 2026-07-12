@@ -4,6 +4,7 @@ import { SYSTEM_PROMPT, pickCategory, categoryById, type Category } from './pers
 import { fewShotBlock, stubPost } from './fewshot.js';
 import { recentTexts, isDuplicate } from './history.js';
 import { containsUrl } from './urls.js';
+import { violatesTokenPolicy } from './contentGuard.js';
 
 export interface GenerateOptions {
   categoryId?: string;
@@ -78,6 +79,11 @@ export async function generate(opts: GenerateOptions = {}): Promise<GeneratedPos
     if (text.length > 280) continue; // too long, retry
     if (isDuplicate(text)) continue; // already posted this, retry
     if (containsUrl(text)) continue; // URL would cost 13x on X, retry
+    const violation = violatesTokenPolicy(text);
+    if (violation) {
+      console.warn(`[guard] regenerating — ${violation}: ${text}`);
+      continue; // she never names/shills tokens; retry
+    }
     return { text, category, source: 'generated' };
   }
 

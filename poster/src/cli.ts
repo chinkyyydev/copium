@@ -6,6 +6,7 @@ import { recordPublished } from './history.js';
 import { runTick } from './tick.js';
 import { hasAnthropic, hasDiscord, hasX, config } from './config.js';
 import { containsUrl } from './urls.js';
+import { violatesTokenPolicy } from './contentGuard.js';
 
 /** Minimal flag parser: --key value  and  --flag (boolean). */
 function parseArgs(argv: string[]): { positional: string[]; flags: Record<string, string | boolean> } {
@@ -93,6 +94,11 @@ async function cmdPublish(positional: string[], flags: Record<string, string | b
   for (const draft of approved) {
     if (containsUrl(draft.text)) {
       console.log(`⚠ skipped ${draft.id} — contains a URL ($0.20 rate on X). Reject it or post manually.`);
+      continue;
+    }
+    const violation = violatesTokenPolicy(draft.text);
+    if (violation) {
+      console.log(`🚫 skipped ${draft.id} — ${violation}. Token policy: she never names or shills tokens.`);
       continue;
     }
     if (dry || !hasX()) {
