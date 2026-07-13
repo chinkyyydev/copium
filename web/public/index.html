@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Copium Clinic — talk to her</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app">
+    <!-- ============ avatar panel ============ -->
+    <section class="avatar-panel" aria-label="Copium">
+      <div class="hud-line">
+        <span class="dot"></span>
+        <span>MS COPIUM // LIVE</span>
+        <span class="spacer"></span>
+        <span id="status" class="status">booting…</span>
+      </div>
+
+      <div class="stage" id="stage">
+        <!-- real art: drop expr-<name>.png files into public/expressions/ -->
+        <img id="face" class="face" alt="" hidden>
+        <!-- placeholder until the Niji roll lands -->
+        <div id="placeholder" class="placeholder">
+          <svg class="halo" viewBox="0 0 160 70" aria-hidden="true">
+            <path d="M80 6 L146 24 L146 48 L80 64 L14 48 L14 24" fill="none"
+                  stroke="#22e4ff" stroke-width="4" stroke-linecap="round"/>
+          </svg>
+          <div class="expr-label" id="exprLabel">smug</div>
+          <div class="placeholder-note">canon art pending — roll 01</div>
+        </div>
+      </div>
+
+      <div class="avatar-meta">
+        <div class="name">Ms Copium</div>
+        <div class="title">solana's most reliable exit liquidity</div>
+      </div>
+
+      <button id="voiceToggle" class="voice-toggle" type="button" aria-pressed="false">
+        voice: <span id="voiceState">off</span>
+      </button>
+    </section>
+
+    <!-- ============ chat panel ============ -->
+    <section class="chat-panel" aria-label="Chat">
+      <div id="log" class="log" role="log" aria-live="polite"></div>
+
+      <form id="composer" class="composer">
+        <input id="input" type="text" autocomplete="off" maxlength="500"
+               placeholder="tell her about the trade…" aria-label="Message Ms Copium">
+        <button type="submit" id="send">Send</button>
+      </form>
+      <p class="disclaimer">copium is a fictional AI character. nothing here is financial advice — especially not the parts that sound like it.</p>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

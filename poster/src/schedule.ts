@@ -19,21 +19,22 @@ export interface Slot {
 }
 
 // 12 posts/day, one every 2 hours. Each slot biases category selection by the
-// time of day (gremlin energy overnight, gm/sincere in the morning, main jokes
-// midday, series content in the evening).
+// time of day: overnight is raw perps/liquidation damage, mornings misread the
+// macro, midday is the signature bad-timing material, evenings turn the day's
+// losses into trauma-wisdom and conspiracy.
 export const SLOTS: Slot[] = [
-  { id: 'h00', hour: 0, label: 'midnight trenches', categories: ['degen', 'memecoin', 'ct'] },
-  { id: 'h02', hour: 2, label: '2am chart-staring', categories: ['degen', 'bags', 'optimism'] },
-  { id: 'h04', hour: 4, label: '4am void', categories: ['degen', 'internet', 'ai'] },
-  { id: 'h06', hour: 6, label: 'early rise', categories: ['sincere', 'optimism', 'market'] },
-  { id: 'h08', hour: 8, label: 'gm ritual', categories: ['market', 'optimism', 'degen'] },
-  { id: 'h10', hour: 10, label: 'mid-morning', categories: ['memecoin', 'hype', 'ct'] },
-  { id: 'h12', hour: 12, label: 'main joke of the day', categories: ['memecoin', 'bags', 'market'] },
-  { id: 'h14', hour: 14, label: 'early afternoon', categories: ['hype', 'ct', 'internet'] },
-  { id: 'h16', hour: 16, label: 'afternoon reactive', categories: ['reaction', 'market', 'hype'] },
-  { id: 'h18', hour: 18, label: 'evening series', categories: ['bags', 'motivation', 'ai'] },
-  { id: 'h20', hour: 20, label: 'prime evening', categories: ['memecoin', 'motivation', 'advice'] },
-  { id: 'h22', hour: 22, label: 'late night', categories: ['ct', 'degen', 'internet'] },
+  { id: 'h00', hour: 0, label: 'midnight liquidations', categories: ['perps', 'launchpad', 'validation'] },
+  { id: 'h02', hour: 2, label: '2am chart-staring', categories: ['conviction', 'conspiracy', 'perps'] },
+  { id: 'h04', hour: 4, label: '4am void', categories: ['philosophy', 'conspiracy', 'validation'] },
+  { id: 'h06', hour: 6, label: 'early misread', categories: ['macro', 'rotation', 'badtiming'] },
+  { id: 'h08', hour: 8, label: 'morning positioning', categories: ['macro', 'smartmoney', 'badtiming'] },
+  { id: 'h10', hour: 10, label: 'mid-morning', categories: ['launchpad', 'rotation', 'smartmoney'] },
+  { id: 'h12', hour: 12, label: 'main post of the day', categories: ['badtiming', 'validation', 'conviction'] },
+  { id: 'h14', hour: 14, label: 'early afternoon', categories: ['rotation', 'smartmoney', 'perps'] },
+  { id: 'h16', hour: 16, label: 'afternoon reactive', categories: ['reaction', 'macro', 'badtiming'] },
+  { id: 'h18', hour: 18, label: 'evening reflection', categories: ['philosophy', 'conviction', 'validation'] },
+  { id: 'h20', hour: 20, label: 'prime evening', categories: ['badtiming', 'conspiracy', 'launchpad'] },
+  { id: 'h22', hour: 22, label: 'late night', categories: ['perps', 'philosophy', 'conviction'] },
 ];
 
 /** Current local hour in the configured timezone. */

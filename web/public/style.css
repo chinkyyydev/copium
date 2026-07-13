@@ -1,0 +1,250 @@
+/* Copium Clinic — teal-noir HUD, matches the brand palette (doc 02 §4). */
+
+:root {
+  --void: #071011;
+  --void-2: #0a181a;
+  --panel: #0d2124;
+  --hair: #1c3c40;
+  --hair-bright: #22e4ff33;
+  --cyan: #22e4ff;
+  --emerald: #2ee6a8;
+  --purple: #8b5cf6;
+  --ink: #eaf4f3;
+  --ink-dim: #a9c6c7;
+  --muted: #6e8f91;
+  --mono: "Cascadia Code", ui-monospace, Consolas, monospace;
+  --sans: "Segoe UI", system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(1000px 500px at 80% -10%, #0e2a2d 0%, transparent 55%),
+    radial-gradient(800px 500px at 5% 110%, #14122b 0%, transparent 50%),
+    var(--void);
+  color: var(--ink);
+  font-family: var(--sans);
+}
+
+.app {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 20px;
+  max-width: 1000px;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 24px 20px;
+}
+
+/* ---------- avatar panel ---------- */
+
+.avatar-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  border: 1px solid var(--hair);
+  border-radius: 8px;
+  background: linear-gradient(180deg, var(--panel), var(--void-2));
+  padding: 16px;
+  align-self: start;
+  position: sticky;
+  top: 24px;
+}
+
+.hud-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.18em;
+  color: var(--cyan);
+}
+.hud-line .dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 8px var(--cyan);
+  animation: pulse 2.4s ease-in-out infinite;
+}
+.hud-line .spacer { flex: 1; }
+.status { color: var(--emerald); text-transform: uppercase; }
+.status.err { color: #ff5b6e; }
+
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+
+.stage {
+  aspect-ratio: 1;
+  border: 1px solid var(--hair);
+  border-radius: 6px;
+  background: var(--void-2);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  position: relative;
+}
+.stage.speaking { animation: talk 0.42s ease-in-out infinite; }
+@keyframes talk { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-3px)} }
+
+.face { width: 100%; height: 100%; object-fit: cover; }
+
+.placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.halo { width: 110px; filter: drop-shadow(0 0 10px #22e4ff88); animation: bob 3.2s ease-in-out infinite; }
+@keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+
+.expr-label {
+  font-family: var(--mono);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--ink);
+  padding: 6px 18px;
+  border: 1px solid var(--hair-bright);
+  border-radius: 999px;
+  transition: color .2s ease;
+}
+.placeholder-note {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.avatar-meta .name { font-family: var(--mono); font-weight: 700; font-size: 1.3rem; }
+.avatar-meta .title { color: var(--muted); font-size: 0.82rem; }
+
+.voice-toggle {
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  background: transparent;
+  border: 1px solid var(--cyan);
+  border-radius: 4px;
+  padding: 9px;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.voice-toggle:hover { background: var(--cyan); color: var(--void); }
+.voice-toggle[aria-pressed="true"] { background: var(--cyan); color: var(--void); }
+.voice-toggle:disabled { opacity: .4; cursor: not-allowed; }
+.voice-toggle:focus-visible { outline: 2px solid var(--emerald); outline-offset: 2px; }
+
+/* ---------- chat panel ---------- */
+
+.chat-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 48px);
+}
+
+.log {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+  padding: 6px 4px 18px;
+}
+
+.msg {
+  max-width: 78%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  line-height: 1.5;
+  font-size: 0.95rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.msg.user {
+  align-self: flex-end;
+  background: #123a40;
+  border: 1px solid #1d565e;
+  border-bottom-right-radius: 3px;
+}
+.msg.bot {
+  align-self: flex-start;
+  background: var(--panel);
+  border: 1px solid var(--hair);
+  border-bottom-left-radius: 3px;
+}
+.msg.bot .who {
+  display: block;
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  margin-bottom: 4px;
+}
+.msg.typing { color: var(--muted); font-family: var(--mono); font-size: 0.8rem; }
+.msg.typing .d { animation: blinkdots 1.2s infinite; }
+.msg.typing .d:nth-child(2) { animation-delay: .2s; }
+.msg.typing .d:nth-child(3) { animation-delay: .4s; }
+@keyframes blinkdots { 0%,100%{opacity:.2} 50%{opacity:1} }
+
+.composer {
+  display: flex;
+  gap: 10px;
+  border-top: 1px solid var(--hair);
+  padding-top: 14px;
+}
+.composer input {
+  flex: 1;
+  background: var(--void-2);
+  border: 1px solid var(--hair);
+  border-radius: 6px;
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 0.95rem;
+  padding: 12px 14px;
+}
+.composer input:focus { outline: none; border-color: var(--cyan); }
+.composer button {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: var(--cyan);
+  color: var(--void);
+  border: none;
+  border-radius: 6px;
+  padding: 0 22px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.composer button:disabled { opacity: .45; cursor: not-allowed; }
+.composer button:focus-visible { outline: 2px solid var(--emerald); outline-offset: 2px; }
+
+.disclaimer {
+  margin: 10px 0 0;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* ---------- responsive ---------- */
+
+@media (max-width: 760px) {
+  .app { grid-template-columns: 1fr; }
+  .avatar-panel { position: static; flex-direction: row; flex-wrap: wrap; align-items: center; }
+  .hud-line { width: 100%; }
+  .stage { width: 130px; aspect-ratio: 1; }
+  .avatar-meta { flex: 1; }
+  .chat-panel { min-height: 0; }
+  .log { max-height: 55vh; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .halo, .hud-line .dot, .stage.speaking { animation: none; }
+}
