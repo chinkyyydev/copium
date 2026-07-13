@@ -1,8 +1,8 @@
 # Deploying the Copium poster to Render (24/7)
 
-The bot is a single always-on worker: it runs the Discord approval bot **and** generates one post every 2 hours internally. Render deploys from a Git repo, so the flow is: push to GitHub → create the Render Blueprint → add your secrets.
+The bot is a single always-on worker: it generates one post every 2 hours internally and, with `COPIUM_AUTO_POST=true` (the current blueprint default), **publishes it straight to X** — each post is also carded in Discord with a **Delete** button so you can pull anything after the fact. Set `COPIUM_AUTO_POST=false` to switch back to the manual Approve gate. Render deploys from a Git repo, so the flow is: push to GitHub → create the Render Blueprint → add your secrets.
 
-The repo is already initialized and committed locally (with `.env` excluded). You just need to push it to GitHub and connect Render.
+The repo is already on GitHub at `github.com/chinkyyydev/copium` and pushed. You just need to connect it to Render and add the secrets.
 
 ## 1. Create a GitHub repo and push
 
@@ -43,9 +43,10 @@ Open the service → **Logs**. Healthy boot looks like:
 ```
 Bot online as copium#7756. Watching for new drafts…
 Auto-generation ON — cron "0 */2 * * *" (America/New_York).
+Auto-post ON — drafts publish to X directly.
 ```
 
-It's now live 24/7 — every 2 hours it drafts a post and cards it in your Discord channel with the Approve/Reject/Regenerate buttons.
+It's now live 24/7 — every 2 hours it drafts a post, publishes it straight to X, and cards it in your Discord channel with a **Delete** button (in case you want to pull one).
 
 ## 5. Turn off the local machinery
 

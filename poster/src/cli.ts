@@ -162,7 +162,7 @@ async function main() {
   npm run publish -- [id] [--dry]      publish approved drafts to X
   npm run run                          one scheduled tick (pick slot, generate, queue)
 
-Categories: memecoin bags hype ct degen market optimism motivation advice ai internet reaction sincere`);
+Categories: badtiming conviction conspiracy validation perps rotation smartmoney launchpad philosophy macro reaction`);
   }
 }
 
