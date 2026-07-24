@@ -1,0 +1,27 @@
+{
+  "name": "copium-trader",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Discord perps signal bot — scans crypto perpetual futures for long/short confluences, paper-trades a $100 → $500 challenge with TP/SL risk management, and tunes its own strategy from trade outcomes.",
+  "scripts": {
+    "start": "tsx src/bot.ts",
+    "bot": "tsx src/bot.ts",
+    "scan": "tsx src/cli.ts scan",
+    "stats": "tsx src/cli.ts stats",
+    "brain": "tsx src/cli.ts brain",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "discord.js": "^14.16.0",
+    "dotenv": "^17.0.0",
+    "tsx": "^4.19.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0"
+  }
+}

@@ -1,6 +1,28 @@
-# Render Blueprint — deploys the Copium poster as a 24/7 background worker.
+# Render Blueprint — deploys the Copium poster and the perps trader as 24/7 background workers.
 # Docs: https://render.com/docs/blueprint-spec
 services:
+  - type: worker
+    name: copium-trader
+    runtime: node
+    plan: starter
+    region: oregon
+    rootDir: trader        # the perps signal bot lives in the trader/ subfolder
+    buildCommand: npm ci
+    startCommand: npm start
+    autoDeploy: true
+    envVars:
+      - key: COPIUM_DATA_DIR
+        value: /data
+      # Point these at a dedicated #trades channel (falls back to the poster's
+      # DISCORD_BOT_TOKEN / DISCORD_CHANNEL_ID if unset).
+      - key: TRADER_DISCORD_BOT_TOKEN
+        sync: false
+      - key: TRADER_DISCORD_CHANNEL_ID
+        sync: false
+    disk:
+      name: copium-trader-data
+      mountPath: /data
+      sizeGB: 1
   - type: worker
     name: copium-poster
     runtime: node
