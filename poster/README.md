@@ -48,7 +48,7 @@ Fill in `.env` (see [.env.example](.env.example)):
 
 1. **`ANTHROPIC_API_KEY`** — from [console.anthropic.com](https://console.anthropic.com). Enables real generation. Default model `claude-opus-4-8`; set `COPIUM_MODEL=claude-sonnet-5` (or `claude-haiku-4-5`) for cheaper high-volume posting.
 2. **`DISCORD_WEBHOOK_URL`** — the review channel (Server Settings → Integrations → Webhooks). Every draft gets posted here for a human to eyeball. **This is the brand-safety gate — keep it.**
-3. **`X_API_KEY` / `X_API_SECRET` / `X_ACCESS_TOKEN` / `X_ACCESS_SECRET`** — from [developer.x.com](https://developer.x.com). Needs a Read+Write app with OAuth 1.0a user tokens. The **Free** tier can post ~1,500/month; upgrade to **Basic (~$200/mo)** when you add the reply strategy.
+3. **`X_API_KEY` / `X_API_SECRET` / `X_ACCESS_TOKEN` / `X_ACCESS_SECRET`** — from [developer.x.com](https://developer.x.com). Needs a Read+Write app with OAuth 1.0a user tokens. The **Free** tier can post ~1,500/month; upgrade to **Basic (~$200/mo)** when you add the reply strategy. If the tier's post cap runs out mid-month (X answers `429 UsageCapExceeded`), the bot posts one clear "X wants money" notice to Discord, pauses auto-posting until the cap resets (or 24 h if X doesn't say), and queues new drafts for manual approval instead of failing one by one.
 
 Then:
 

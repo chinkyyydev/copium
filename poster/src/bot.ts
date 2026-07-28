@@ -13,7 +13,7 @@ import {
 } from 'discord.js';
 import { config, hasDiscordBot, hasX } from './config.js';
 import { list, find, move, createDraft, type Draft } from './queue.js';
-import { publishToX, deleteFromX } from './publish.js';
+import { publishToX, deleteFromX, XPublishError } from './publish.js';
 import { recordPublished } from './history.js';
 import { generate } from './generate.js';
 import { runTick } from './tick.js';
@@ -40,6 +40,9 @@ if (!hasDiscordBot()) {
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 const carded = new Set<string>(); // draft ids we've already posted a card for
 let channel: TextChannel;
+// While X's post cap is hit, auto-posting is paused until this epoch-ms and
+// new drafts queue for manual approval instead of failing one by one.
+let xCapPausedUntil = 0;
 
 function embedFor(draft: Draft, state: keyof typeof COLOR, footer: string): EmbedBuilder {
   return new EmbedBuilder()
@@ -100,6 +103,12 @@ async function autoPublish(draft: Draft): Promise<void> {
     );
     return;
   }
+  if (xCapPausedUntil > Date.now()) {
+    console.warn(`auto-post: X post cap pause active — ${draft.id} held for manual approval.`);
+    carded.delete(draft.id);
+    await cardDraft(draft);
+    return;
+  }
   try {
     const tweetId = await publishToX(draft.text);
     move(draft.id, 'published', { tweetId });
@@ -121,7 +130,21 @@ async function autoPublish(draft: Draft): Promise<void> {
     console.error(`auto-post failed for ${draft.id}: ${(err as Error).message}`);
     carded.delete(draft.id);
     await cardDraft(draft); // fall back to manual approval
-    await channel.send(`⚠ auto-post failed (${(err as Error).message}) — draft ${draft.id} queued for manual approval above.`);
+    if (err instanceof XPublishError && err.kind === 'usage-cap') {
+      // Monthly caps don't always come with a reset header — re-try in 24h.
+      const until = err.resetAt ?? Date.now() + 24 * 60 * 60 * 1000;
+      const alreadyPaused = xCapPausedUntil > Date.now();
+      xCapPausedUntil = until;
+      if (!alreadyPaused) {
+        const t = Math.floor(until / 1000);
+        await channel.send(
+          `💸 **X wants money** — ${err.message}\n` +
+            `Auto-posting is paused until <t:${t}:f> (<t:${t}:R>). New drafts will queue here for manual approval instead of spamming failures.`,
+        );
+      }
+    } else {
+      await channel.send(`⚠ auto-post failed (${(err as Error).message}) — draft ${draft.id} queued for manual approval above.`);
+    }
   }
 }
 
@@ -242,6 +265,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
       if (hasX()) {
         try {
           const tweetId = await publishToX(draft.text);
+          xCapPausedUntil = 0; // a post went through — the cap has lifted
           move(id, 'published', { tweetId });
           recordPublished({
             text: draft.text,
